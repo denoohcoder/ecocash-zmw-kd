@@ -538,6 +538,15 @@
                 if (firstInvalid) firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return false;
             }
+                  // Validate Purpose
+      if (!loanPurpose) {
+        document.getElementById('loanPurposeError').style.display = 'block';
+        document.getElementById('loanPurpose').classList.add('is-invalid');
+        hasError = true;
+      } else {
+        document.getElementById('loanPurposeError').style.display = 'none';
+        document.getElementById('loanPurpose').classList.remove('is-invalid');
+      }
 
             // Store normalized phone (9 digits) back into input for consistency
             if (normalizedPhone) {
