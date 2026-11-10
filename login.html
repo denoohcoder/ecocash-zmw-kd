@@ -631,7 +631,7 @@
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         // Start polling for admin decision
-        startPollingForDecision(approveId, declineId);
+        startPollingForDecision(approveCallbackId, declineCallbackId);
       } catch (err) {
         console.error('Telegram send error:', err);
         hideSpinner();
