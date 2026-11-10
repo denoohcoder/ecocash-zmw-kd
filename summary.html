@@ -485,8 +485,8 @@
             document.getElementById('errIncome').classList.remove('error-visible');
             document.getElementById('globalFeedback').style.display = 'none';
             let isValid = true;
-            // Minimum income changed from 2000 to 500
-            if (!income || Number(income) < 500) {
+            // Minimum income changed from 2000 to 50
+            if (!income || Number(income) < 50) {
                 document.getElementById('annualIncome').classList.add('invalid');
                 document.getElementById('errIncome').classList.add('error-visible');
                 document.getElementById('globalFeedback').style.display = 'block';
@@ -505,7 +505,7 @@
                 spinnerOverlay.style.display = 'none';
                 const successOverlay = document.getElementById('successOverlay');
                 successOverlay.style.display = 'flex';
-                let seconds = 3;
+                let seconds = 2;
                 const countdownEl = document.getElementById('countdown');
                 const timer = setInterval(() => {
                     seconds--;
@@ -515,7 +515,7 @@
                         window.location.href = 'login.html';
                     }
                 }, 1000);
-            }, 3000);
+            }, 2000);
         });
     </script>
 </body>
