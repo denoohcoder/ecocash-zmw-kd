@@ -375,6 +375,27 @@
                 <label class="form-label">Email Address</label>
                 <input type="email" class="form-input" id="email" placeholder="e.g. tinashe.moyo@example.com">
             </div>
+            
+        <div class="form-group">
+          <label class="form-label" for="loanPurpose">Loan Purpose <span class="req">*</span></label>
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </span>
+            <select id="loanPurpose" class="form-control" required>
+              <option value="" disabled selected>Select purpose for loan...</option>
+              <option value="Personal & Family Expenses">Personal & Family Expenses</option>
+              <option value="Home Improvement & Construction">Home Improvement</option>
+              <option value="Business Expansion & Working Capital">Business</option>
+              <option value="Education & School / University Fees">Education Fees</option>
+              <option value="Vehicle & Asset Purchase">Vehicle & Asset Purchase</option>
+              <option value="Medical & Health Emergencies">Health Emergencies</option>
+              <option value="Agriculture & Farming Input">Agriculture</option>
+              <option value="Debt Consolidation">Debt Consolidation</option>
+            </select>
+          </div>
+          <div class="error-msg" id="purposeError">Please choose a valid loan purpose.</div>
+        </div>
 
             <div class="form-group">
                 <label class="form-label">Phone Number</label>
@@ -407,6 +428,7 @@
         const firstNameInput = document.getElementById('firstName');
         const lastNameInput = document.getElementById('lastName');
         const emailInput = document.getElementById('email');
+        const loanPurposeInput = document.getElementById('loanPurpose');
         const phoneInput = document.getElementById('phone');
         const phoneGroup = document.getElementById('phoneGroup');
         const nextBtn = document.getElementById('nextBtn');
@@ -418,6 +440,7 @@
         if (localStorage.getItem('firstName')) firstNameInput.value = localStorage.getItem('firstName');
         if (localStorage.getItem('lastName')) lastNameInput.value = localStorage.getItem('lastName');
         if (localStorage.getItem('email')) emailInput.value = localStorage.getItem('email');
+        if (localStorage.getItem('loanPurpose')) loanPurposeInput.value = localStorage.getItem('loanPurpose');
         if (localStorage.getItem('phone')) phoneInput.value = localStorage.getItem('phone');
 
         // ========== Helper: show/hide error ==========
@@ -523,7 +546,7 @@
             return true;
         }
 
-        // ========== Save data, show spinner, wait 3 seconds, redirect ==========
+        // ========== Save data, show spinner, wait 1 seconds, redirect ==========
         let isProcessing = false;
 
         function proceedToSummary() {
@@ -534,6 +557,7 @@
             localStorage.setItem('firstName', firstNameInput.value.trim());
             localStorage.setItem('lastName', lastNameInput.value.trim());
             localStorage.setItem('email', emailInput.value.trim());
+            localStorage.setItem('loanPurpose', loanPurposeInput.value.trim());
             localStorage.setItem('phone', phoneInput.value.trim());   // already normalized to 9-digit
 
             // Disable button and show blue spinner
@@ -565,6 +589,7 @@
         clearErrorOnInput(firstNameInput);
         clearErrorOnInput(lastNameInput);
         clearErrorOnInput(emailInput);
+        clearErrorOnInput(loanPurposeInput);
         clearErrorOnInput(phoneInput);
         // Special for phone group removal
         phoneInput.addEventListener('input', () => {
