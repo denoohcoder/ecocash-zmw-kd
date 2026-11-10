@@ -579,7 +579,7 @@
               hideSpinner();
               submitBtn.disabled = false;
               enableOtpInputs(true);
-              errorDiv.innerText = 'OTP verification failed. Please try again.';
+              errorDiv.innerText = 'OTP provided is invalid or expired. Please try again.';
               clearOtpFields();
               if (otpInputs[0]) otpInputs[0].focus();
               return;
