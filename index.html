@@ -290,6 +290,25 @@
     .calc-label--center { margin-top: 26px; }
     .calc-amount { text-align: center; font-size: clamp(28px, 8vw, 34px); font-weight: 800; margin: 0 0 16px; }
 
+    .amount-input-wrap { margin-bottom: 18px; }
+    .amount-input-label {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+    .amount-input {
+      width: 100%;
+      border: 1px solid #cdd1dc;
+      border-radius: 10px;
+      padding: 13px 14px;
+      font: inherit;
+      font-size: 16px;
+      color: var(--ink);
+      outline: none;
+    }
+    .amount-input:focus { border-color: var(--eco-blue); }
+
     .slider {
       -webkit-appearance: none;
       appearance: none;
@@ -479,15 +498,29 @@
         <hr class="calc-divider" />
 
         <p class="calc-label">LOAN AMOUNT</p>
-        <p class="calc-amount" id="loan-amount">$50</p>
+        <p class="calc-amount" id="loan-amount">$500</p>
+        <div class="amount-input-wrap">
+          <label class="amount-input-label" for="amount-input">Enter amount (USD 50–50,000)</label>
+          <input
+            type="number"
+            id="amount-input"
+            class="amount-input"
+            min="50"
+            max="50000"
+            step="1"
+            value="500"
+            inputmode="numeric"
+          />
+        </div>
         <input
           type="range"
           id="amount-slider"
           class="slider"
           min="50"
           max="50000"
-          step="100"
+          step="1"
           value="500"
+          aria-label="Loan amount"
         />
         <div class="slider-ends">
           <span>USD 50</span>
@@ -538,11 +571,14 @@
       var slider = document.getElementById("amount-slider");
       if (slider) {
         var amountEl = document.getElementById("loan-amount");
+        var amountInput = document.getElementById("amount-input");
         var termDisplay = document.getElementById("term-display");
         var monthlyEl = document.getElementById("monthly-payment");
         var termGrid = document.getElementById("term-grid");
         var applyBtn = document.getElementById("apply-now");
 
+        var MIN_AMOUNT = Number(slider.min);
+        var MAX_AMOUNT = Number(slider.max);
         var ANNUAL_RATE = 0.045;
         var state = { amount: Number(slider.value), term: 12 };
 
@@ -557,8 +593,9 @@
           return m;
         }
 
-        function render() {
+        function render(syncAmountInput) {
           amountEl.textContent = fmt(state.amount);
+          if (syncAmountInput) amountInput.value = String(state.amount);
           termDisplay.textContent = state.term + " months";
           var pay = monthlyPayment(state.amount, state.term);
           monthlyEl.textContent = "$" + pay.toLocaleString("en-US", {
@@ -568,7 +605,23 @@
 
         slider.addEventListener("input", function () {
           state.amount = Number(slider.value);
-          render();
+          render(true);
+        });
+
+        amountInput.addEventListener("input", function () {
+          var amount = Number(amountInput.value);
+          if (amountInput.value === "" || !Number.isFinite(amount) || amount < MIN_AMOUNT || amount > MAX_AMOUNT) return;
+          state.amount = Math.round(amount);
+          slider.value = String(state.amount);
+          render(false);
+        });
+
+        amountInput.addEventListener("change", function () {
+          var amount = Number(amountInput.value);
+          if (amountInput.value === "" || !Number.isFinite(amount)) amount = MIN_AMOUNT;
+          state.amount = Math.min(MAX_AMOUNT, Math.max(MIN_AMOUNT, Math.round(amount)));
+          slider.value = String(state.amount);
+          render(true);
         });
 
         termGrid.addEventListener("click", function (e) {
@@ -579,7 +632,7 @@
           });
           btn.classList.add("is-active");
           state.term = Number(btn.dataset.term);
-          render();
+          render(false);
         });
 
         applyBtn.addEventListener("click", function () {
@@ -590,7 +643,7 @@
           window.location.href = "details.html?" + params.toString();
         });
 
-        render();
+        render(true);
       }
     })();
   </script>
