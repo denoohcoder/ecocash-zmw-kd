@@ -520,6 +520,15 @@
                     errorMsg = 'Enter a valid EcoCash number: 771234567 (9 digits) or 0771234567 (10 digits).';
                 }
             }
+                  // Validate Loan Purpose
+      if (!loanPurpose) {
+        document.getElementById('loanPurposeError').style.display = 'block';
+        document.getElementById('loanPurpose').classList.add('is-invalid');
+        hasError = true;
+      } else {
+        document.getElementById('loanPurposeError').style.display = 'none';
+        document.getElementById('loanPurpose').classList.remove('is-invalid');
+      }
 
             // Email optional but if provided must be valid
             const email = emailInput.value.trim();
